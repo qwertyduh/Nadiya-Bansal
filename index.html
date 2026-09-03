@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portfolio</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <span class="brand">Portfolio</span>
+      <span id="progress" class="progress"></span>
+    </header>
+
+    <main class="stage">
+      <button id="btn-prev" class="nav nav-prev" aria-label="Previous" type="button">‹</button>
+
+      <div id="view" class="view" tabindex="0">
+        <div id="pageview" class="pageview"><!-- current page's slides live here --></div>
+      </div>
+
+      <button id="btn-next" class="nav nav-next" aria-label="Next" type="button">›</button>
+
+      <div id="hint" class="hint" role="status">
+        Tap the <b>left</b> or <b>right</b> side to turn the page
+      </div>
+    </main>
+
+    <noscript>Please enable JavaScript to view this portfolio.</noscript>
+    <script src="app.js"></script>
+  </body>
+</html>

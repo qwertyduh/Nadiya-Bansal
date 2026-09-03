@@ -1,0 +1,212 @@
+/* ---------- Design tokens ---------- */
+:root {
+  --bg: #101114;
+  --surface: #ffffff;
+  --skeleton-base: #e4e7eb;
+  --skeleton-shine: #f5f7f9;
+  --ink: #e8eaee;
+  --muted: #9aa2ad;
+  --chrome: #1a1c22;
+  --chrome-line: #262a33;
+  --accent: #7c9cff;
+  --radius: 10px;
+}
+/* Reading rooms stay dark and focused; the slide paper itself stays white. */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #edeef1;
+    --chrome: rgba(255, 255, 255, 0.7);
+    --chrome-line: #dfe2e8;
+    --ink: #1c1f24;
+    --muted: #6a7280;
+  }
+}
+
+/* ---------- Base ---------- */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* the reader is a fixed viewport, not a scrolling page */
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--chrome);
+  border-bottom: 1px solid var(--chrome-line);
+  backdrop-filter: blur(8px);
+}
+.brand { font-weight: 650; letter-spacing: 0.02em; font-size: 0.95rem; }
+.progress { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+
+/* ---------- Stage: fills the space below the bar ---------- */
+.stage {
+  position: relative;
+  height: calc(100% - 45px);
+}
+.view {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  outline: none;
+  overflow: hidden;
+  cursor: pointer; /* tapping anywhere flips the page */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Each page fits the viewport while preserving each slide's aspect ratio. */
+.pageview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3vw, 44px);
+  width: 100%;
+  height: 100%;
+  padding: clamp(8px, 2.5vmin, 32px);
+  transform-origin: center;
+}
+.slide {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+}
+/* Entrance "turn" plays only when a page is advanced (app.js toggles .pop). */
+.pageview.pop .slide {
+  animation: page-in 0.28s ease;
+}
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--ar, 16 / 9);
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+.frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.slide.loaded .frame img { opacity: 1; }
+
+.slide-caption {
+  display: none; /* page indicator lives in the top bar instead */
+}
+
+/* ---------- Skeleton loader ---------- */
+.skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    var(--skeleton-base) 40%,
+    var(--skeleton-shine) 50%,
+    var(--skeleton-base) 60%
+  );
+  background-size: 220% 100%;
+  animation: shimmer 1.25s ease-in-out infinite;
+}
+.slide.loaded .skeleton { display: none; }
+.slide.error .skeleton {
+  display: none;
+  background: var(--surface);
+  animation: none;
+}
+.slide.error .frame::after {
+  content: "couldn’t load this slide";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #98a0aa;
+  font-size: 0.9rem;
+}
+
+/* ---------- First-run hint ---------- */
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 6;
+  max-width: calc(100% - 32px);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.82rem;
+  text-align: center;
+  pointer-events: none; /* never blocks taps */
+  opacity: 1;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.hint b { font-weight: 650; }
+.hint.gone {
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px);
+}
+@media (prefers-color-scheme: light) {
+  .hint { background: rgba(20, 24, 32, 0.72); }
+}
+
+/* ---------- Side chevrons ---------- */
+.nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  width: 44px;
+  height: 84px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.nav:hover, .nav:focus-visible { opacity: 1; }
+.nav:disabled { opacity: 0; cursor: default; }
+.nav-prev { left: 10px; }
+.nav-next { right: 10px; }
+
+/* Reveal chevrons on devices that hover; on touch keep them subtle/off. */
+@media (hover: hover) {
+  .stage:hover .nav { opacity: 0.55; }
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0% { background-position: 160% 0; }
+  100% { background-position: -160% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+  .slide { animation: none; }
+  .frame img { transition: none; }
+}
